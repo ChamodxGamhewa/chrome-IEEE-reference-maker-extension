@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>IEEE Reference Maker</title>
+</head>
+
+<body>
+  <h3>IEEE Reference Maker</h3>
+
+  <label for="author">Author (A. Author):</label>
+  <input id="author" type="text" placeholder="e.g. A. James">
+
+  <label for="title">Page title:</label>
+  <input id="title" type="text" placeholder="Page title">
+
+  <label for="website">Website Title:</label>
+  <input id="website" type="text" placeholder="Website title">
+
+  <label for="url">URL:</label>
+  <input id="url" type="text" placeholder="URL">
+
+  <label for="accessed">Accessed date:</label>
+  <input id="accessed" type="text" placeholder="Accessed date">
+
+  <div class="button-container">
+    <button id="generate">Generate reference</button>
+    <button id="copy">Copy to clipboard</button>
+  </div>
+
+  <label for="output">Reference:</label>
+  <textarea id="output" readonly placeholder="Generated Reference"></textarea>
+
+  <div class="footer-container">
+    <div class="text-row">
+      <p>IEEE Reference Maker v1.0</p>
+      <p>Created by Chamod Gamhewa</p>
+    </div>
+
+    <div class="button-row">
+      <a class="icon-btn" href="https://www.linkedin.com/in/chamod-gamhewa/" target="_blank" rel="noopener noreferrer">
+        <img src="linkedin.svg" alt="linkedin" width="25px">
+      </a>
+
+      <a class="icon-btn" href="https://github.com/ChamodxGamhewa" target="_blank" rel="noopener noreferrer">
+        <img src="github.svg" alt="github" width="25px">
+      </a>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+
+</html>
