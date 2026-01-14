@@ -44,7 +44,7 @@ function formatIsoToShortMonthDate(isoString) {
   return `${m} ${d}, ${y}`;
 }
 
-function buildReference(author, title, website, url, accessed) {
+function buildReference(author, title, website, url, posted, accessed) {
   author = author.trim();
   let authorPart = "";
   if (author) {
@@ -53,7 +53,11 @@ function buildReference(author, title, website, url, accessed) {
     }
     authorPart = `${author} `;
   }
-  return `${authorPart}"${title}." ${website}. ${url} (accessed ${accessed}).`;
+  let postedPart = "";
+  if (posted) {
+    postedPart = `${posted}. `;
+  }
+  return `${authorPart}"${title}." ${website}. ${postedPart}${url} (accessed ${accessed}).`;
 }
 
 function cleanYoutubeTitle(title) {
@@ -93,6 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const titleInput = document.getElementById("title");
   const websiteInput = document.getElementById("website");
   const urlInput = document.getElementById("url");
+  const postedInput = document.getElementById("posted");
   const accessedInput = document.getElementById("accessed");
   const output = document.getElementById("output");
   const generateBtn = document.getElementById("generate");
@@ -164,6 +169,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (siteName) websiteInput.value = siteName;
         else if (tab.url) websiteInput.value = new URL(tab.url).hostname;
 
+        if (publishedIso) {
+          // Try to format it nicely if possible, or just use raw if not
+          const formatted = formatAccessDate(new Date(publishedIso));
+          postedInput.value = formatted || publishedIso;
+        }
+
         pageMetadata = {
           isYouTube: Boolean(isYouTube),
           publishedIso: publishedIso || "",
@@ -178,6 +189,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const title = titleInput.value.trim();
     const website = websiteInput.value.trim();
     const url = urlInput.value.trim();
+    const posted = postedInput.value.trim();
     const accessed = accessedInput.value.trim() || formatAccessDate(new Date());
 
     if (pageMetadata.isYouTube) {
@@ -189,7 +201,7 @@ document.addEventListener("DOMContentLoaded", () => {
         accessed
       );
     } else {
-      output.value = buildReference(author, title, website, url, accessed);
+      output.value = buildReference(author, title, website, url, posted, accessed);
     }
   });
 
