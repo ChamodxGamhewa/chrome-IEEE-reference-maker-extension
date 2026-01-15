@@ -38,10 +38,26 @@ Since this extension is in development/local mode, you can install it via Chrome
     <b>GUI interface for IEEE Reference Maker</b>
 </p>
 
+
+## Updates
+### v1.0
+- Initial release
+### v1.1
+- Added - Web page/artical posted date
+- Added - Last updated date
+
+## Checked with
+Gekkforgeeks: https://geeksforgeeks.org/  
+Medium: https://medium.com/  
+Stackoverflow: https://stackoverflow.com/  
+JSTOR: https://www.jstor.org/  
+ScienceDirect: https://www.sciencedirect.com/  
+
+
 ## Author
 
 Created by **Chamod Gamhewa**.  
 Linkedin: https://www.linkedin.com/in/chamod-gamhewa/  
 Github: https://github.com/chamodxgamhewa
 
-`Released version v1.0`
+`Released version v1.1`
