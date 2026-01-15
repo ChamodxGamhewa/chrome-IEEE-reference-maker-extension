@@ -44,7 +44,7 @@ function formatIsoToShortMonthDate(isoString) {
   return `${m} ${d}, ${y}`;
 }
 
-function buildReference(author, title, website, url, posted, accessed) {
+function buildReference(author, title, website, url, posted, updated, accessed) {
   author = author.trim();
   let authorPart = "";
   if (author) {
@@ -57,7 +57,11 @@ function buildReference(author, title, website, url, posted, accessed) {
   if (posted) {
     postedPart = `${posted}. `;
   }
-  return `${authorPart}"${title}." ${website}. ${postedPart}${url} (accessed ${accessed}).`;
+  let updatedPart = "";
+  if (updated) {
+    updatedPart = `Updated ${updated}. `;
+  }
+  return `${authorPart}"${title}." ${website}. ${postedPart}${updatedPart}${url} (accessed ${accessed}).`;
 }
 
 function cleanYoutubeTitle(title) {
@@ -139,12 +143,61 @@ document.addEventListener("DOMContentLoaded", () => {
           const lowerUrl = url.toLowerCase();
           const isYouTube =
             lowerUrl.includes("youtube.com/") || lowerUrl.includes("youtu.be/");
-          const publishedIso =
-            document.querySelector('meta[itemprop="datePublished"]')?.getAttribute("content") || "";
+          let publishedIso =
+            document.querySelector('meta[itemprop="datePublished"]')?.getAttribute("content") ||
+            document.querySelector('meta[property="article:published_time"]')?.getAttribute("content") ||
+            document.querySelector('meta[name="date"]')?.getAttribute("content") ||
+            document.querySelector('meta[name="citation_date"]')?.getAttribute("content") ||
+            document.querySelector('meta[name="citation_publication_date"]')?.getAttribute("content") ||
+            document.querySelector('meta[name="dc.date"]')?.getAttribute("content") ||
+            document.querySelector('meta[name="pubdate"]')?.getAttribute("content") ||
+            document.querySelector('meta[name="last-modified"]')?.getAttribute("content") ||
+            document.querySelector('time[itemprop="dateCreated"]')?.getAttribute("datetime") ||
+            document.querySelector('time[itemprop="datePublished"]')?.getAttribute("datetime") ||
+            document.querySelector('.relativetime')?.getAttribute("title") ||
+            "";
+
+          // ... existing publishedIso extraction logic ...
+          if (!publishedIso) {
+            // ... existing fallback ...
+          }
+
+          let modifiedIso =
+            document.querySelector('meta[itemprop="dateModified"]')?.getAttribute("content") ||
+            document.querySelector('meta[property="article:modified_time"]')?.getAttribute("content") ||
+            document.querySelector('meta[name="revised"]')?.getAttribute("content") ||
+            "";
+
+          // Expand JSON-LD search for modified date as well
+          if (!publishedIso || !modifiedIso) {
+            try {
+              const scripts = document.querySelectorAll('script[type="application/ld+json"]');
+              for (const script of scripts) {
+                const json = JSON.parse(script.textContent);
+
+                const processItem = (item) => {
+                  if (item.datePublished && !publishedIso) publishedIso = item.datePublished;
+                  if (item.dateModified && !modifiedIso) modifiedIso = item.dateModified;
+                };
+
+                if (json.datePublished || json.dateModified) {
+                  processItem(json);
+                } else if (Array.isArray(json['@graph'])) {
+                  json['@graph'].forEach(processItem);
+                } else if (Array.isArray(json)) {
+                  json.forEach(processItem);
+                }
+
+                if (publishedIso && modifiedIso) break;
+              }
+            } catch (e) {
+              // Ignore parse errors
+            }
+          }
 
           let channelName = "";
           if (isYouTube) {
-            // Try common locations for the YouTube channel name on the watch page
+            // ... existing youtube logic ...
             const channelLink =
               document.querySelector('#text-container ytd-channel-name a') ||
               document.querySelector('ytd-channel-name a') ||
@@ -155,12 +208,12 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           }
 
-          return { author, siteName, isYouTube, publishedIso, channelName };
+          return { author, siteName, isYouTube, publishedIso, modifiedIso, channelName };
         }
       },
       (results) => {
         if (chrome.runtime.lastError || !results || !results[0]) return;
-        const { author, siteName, isYouTube, publishedIso, channelName } = results[0].result || {};
+        const { author, siteName, isYouTube, publishedIso, modifiedIso, channelName } = results[0].result || {};
         if (isYouTube && channelName) {
           authorInput.value = channelName;
         } else if (author) {
@@ -170,9 +223,15 @@ document.addEventListener("DOMContentLoaded", () => {
         else if (tab.url) websiteInput.value = new URL(tab.url).hostname;
 
         if (publishedIso) {
-          // Try to format it nicely if possible, or just use raw if not
           const formatted = formatAccessDate(new Date(publishedIso));
           postedInput.value = formatted || publishedIso;
+        }
+
+        if (modifiedIso) {
+          const formatted = formatAccessDate(new Date(modifiedIso));
+          document.getElementById("updated").value = formatted || modifiedIso;
+        } else if (publishedIso) {
+          document.getElementById("updated").value = postedInput.value;
         }
 
         pageMetadata = {
@@ -190,6 +249,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const website = websiteInput.value.trim();
     const url = urlInput.value.trim();
     const posted = postedInput.value.trim();
+    const updated = document.getElementById("updated").value.trim();
     const accessed = accessedInput.value.trim() || formatAccessDate(new Date());
 
     if (pageMetadata.isYouTube) {
@@ -201,7 +261,7 @@ document.addEventListener("DOMContentLoaded", () => {
         accessed
       );
     } else {
-      output.value = buildReference(author, title, website, url, posted, accessed);
+      output.value = buildReference(author, title, website, url, posted, updated, accessed);
     }
   });
 
